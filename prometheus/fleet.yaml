@@ -1,4 +1,4 @@
-namespace: default
+defaultNamespace: default
 helm:
 
   chart: kube-prometheus-stack
