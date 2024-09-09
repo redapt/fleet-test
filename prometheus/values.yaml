@@ -1,2 +1,7 @@
 commonLabels:
   customFleetDeployment: "true"
+
+prometheus:
+  prometheusSpec:
+    scrapeInterval: 30s
+    evaluationInterval: 30s
