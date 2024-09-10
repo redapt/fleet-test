@@ -18,21 +18,21 @@ diff:
   comparePatches:
   - apiVersion: monitoring.coreos.com/v1
     kind: Prometheus
-    operations:
-    - {"op":"remove", "path":"/spec/automountServiceAccountToken"}
-    - {"op":"remove", "path":"/spec/enableAdminAPI"}
-    - {"op":"remove", "path":"/spec/hostNetwork"}
-    - {"op":"remove", "path":"/spec/listenLocal"}
-    - {"op":"remove", "path":"/spec/paused"}
-    - {"op":"remove", "path":"/spec/scrapeConfigNamespaceSelector"}
-    - {"op":"remove", "path":"/spec/scrapeConfigSelector"}
-    - {"op":"remove", "path":"/spec/tsdb"}
-#    jsonPointers: # jsonPointers allows to ignore diffs at certain json path
-#    - "/spec/automountServiceAccountToken"
-#    - "/spec/enableAdminAPI"
-#    - "/spec/hostNetwork"
-#    - "/spec/listenLocal"
-#    - "/spec/paused"
-#    - "/spec/scrapeConfigNamespaceSelector"
-#    - "/spec/scrapeConfigSelector"
-#    - "/spec/tsdb"
+#    operations:
+#    - {"op":"remove", "path":"/spec/automountServiceAccountToken"}
+#    - {"op":"remove", "path":"/spec/enableAdminAPI"}
+#    - {"op":"remove", "path":"/spec/hostNetwork"}
+#    - {"op":"remove", "path":"/spec/listenLocal"}
+#    - {"op":"remove", "path":"/spec/paused"}
+#    - {"op":"remove", "path":"/spec/scrapeConfigNamespaceSelector"}
+#    - {"op":"remove", "path":"/spec/scrapeConfigSelector"}
+#    - {"op":"remove", "path":"/spec/tsdb"}
+    jsonPointers: # jsonPointers allows to ignore diffs at certain json path
+    - "/spec/automountServiceAccountToken"
+    - "/spec/enableAdminAPI"
+    - "/spec/hostNetwork"
+    - "/spec/listenLocal"
+    - "/spec/paused"
+    - "/spec/scrapeConfigNamespaceSelector"
+    - "/spec/scrapeConfigSelector"
+    - "/spec/tsdb"
