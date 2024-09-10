@@ -26,6 +26,7 @@ diff:
     - {"op":"remove", "path":"/spec/paused"}
     - {"op":"remove", "path":"/spec/scrapeConfigNamespaceSelector"}
     - {"op":"remove", "path":"/spec/scrapeConfigSelector"}
+    - {"op":"remove", "path":"/spec/tsdb"}
 #    jsonPointers: # jsonPointers allows to ignore diffs at certain json path
 #    - "/spec/automountServiceAccountToken"
 #    - "/spec/enableAdminAPI"
@@ -34,3 +35,4 @@ diff:
 #    - "/spec/paused"
 #    - "/spec/scrapeConfigNamespaceSelector"
 #    - "/spec/scrapeConfigSelector"
+#    - "/spec/tsdb"
