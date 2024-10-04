@@ -3,7 +3,7 @@ description: kube-prometheus-stack collects Kubernetes manifests, Grafana dashbo
 type: application
 maintainers:
   - name: techops-cicd-sre
-    email: techops-cicd-sre@crowdstrike.com
+    email: jmeisner@redapt.com
 name: kube-prometheus-stack
 sources:
   - https://github.com/prometheus-community/helm-charts
@@ -12,8 +12,3 @@ version: 61.1.1
 appVersion: v0.75.0
 kubeVersion: ">=1.16.0-0"
 home: https://github.com/prometheus-operator/kube-prometheus
-dependencies:
-  - name: kube-prometheus-stack
-    version: "61.1.1"
-    appVersion: "v0.75.0"
-    repository: https://artifactory-dev.cicd.dc/artifactory/ext-prometheus-community-helm-prod-remote/
