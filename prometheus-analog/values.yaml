@@ -1,5 +1,5 @@
 kube-prometheus-stack:
-  namespaceOverride: prometheus
+  namespaceOverride: default
   fullnameOverride: kps
 
   ## Create default rules for monitoring the cluster
