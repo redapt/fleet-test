@@ -1,0 +1,383 @@
+kube-prometheus-stack:
+  namespaceOverride: prometheus
+  fullnameOverride: kps
+
+  ## Create default rules for monitoring the cluster
+  defaultRules:
+    create: true
+    rules:
+      alertmanager: false
+      kubeControllerManager: false
+      kubeSchedulerAlerting: false
+      kubeSchedulerRecording: false
+      windows: false
+
+# Disable Alertmanger and Grafana
+  alertmanager:
+    enabled: false
+  grafana:
+    enabled: false
+
+  ## Component scraping the kube api server
+  kubeApiServer:
+    enabled: true
+    tlsConfig:
+      serverName: kubernetes
+      insecureSkipVerify: false
+    serviceMonitor:
+      ## Scrape interval. If not set, the Prometheus default scrape interval is used.
+      interval: "35s"
+
+  ## Component scraping the kubelet and kubelet-hosted cAdvisor
+  kubelet:
+    enabled: true
+    namespace: kube-system
+    serviceMonitor:
+      attachMetadata:
+        node: false
+      ## Scrape interval. If not set, the Prometheus default scrape interval is used.
+      interval: "35s"
+
+  ## Component scraping the kube controller manager
+  kubeControllerManager:
+    enabled: false
+
+  ## Component scraping coreDns. Use either this or kubeDns
+  coreDns:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      ## Scrape interval. If not set, the Prometheus default scrape interval is used.
+      interval: ""
+
+  ## Component scraping etcd
+  kubeEtcd:
+    enabled: true
+    service:
+      enabled: true
+    serviceMonitor:
+      enabled: true
+      ## Scrape interval. If not set, the Prometheus default scrape interval is used.
+      interval: "40s"
+
+  ## Component scraping kube scheduler
+  kubeScheduler:
+    enabled: false
+
+  ## Component scraping kube proxy
+  kubeProxy:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      ## Scrape interval. If not set, the Prometheus default scrape interval is used.
+      interval: "35s"
+
+  ## Component scraping kube state metrics
+  kubeStateMetrics:
+    enabled: true
+
+  ## Configuration for kube-state-metrics subchart
+  kube-state-metrics:
+    namespaceOverride: "prometheus"
+    image:
+      registry: ext-registry-k8s-io-remote.artifactory.cicd.dc
+      repository: kube-state-metrics/kube-state-metrics
+      tag: v2.10.1
+    rbac:
+      create: true
+    releaseLabel: true
+    prometheus:
+      monitor:
+        enabled: true
+
+        ## Scrape interval. If not set, the Prometheus default scrape interval is used.
+        interval: ""
+
+  ## Deploy node exporter as a daemonset to all nodes
+  nodeExporter:
+    enabled: true
+    operatingSystems:
+      linux:
+        enabled: true
+      darwin:
+        enabled: true
+
+  ## Configuration for prometheus-node-exporter subchart
+  prometheus-node-exporter:
+    namespaceOverride: "prometheus"
+    image:
+      registry: quayio.artifactory.cicd.dc
+      repository: prometheus/node-exporter
+      tag: v1.8.1
+    podLabels:
+      jobLabel: node_exporter
+    releaseLabel: true
+    extraArgs:
+      - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($|/)
+      - --collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$
+    prometheus:
+      monitor:
+        enabled: true
+        jobLabel: jobLabel
+        interval: "30s"
+
+  ## Manages Prometheus and Alertmanager components
+  prometheusOperator:
+    enabled: true
+
+    ## Number of old replicasets to retain ##
+    revisionHistoryLimit: 10
+
+    ## Strategy of the deployment
+    strategy: {}
+
+    ## Admission webhook support for PrometheusRules resources added in Prometheus Operator 0.30 can be enabled to prevent incorrectly formatted
+    ## rules from making their way into prometheus and potentially preventing the container from starting
+    admissionWebhooks:
+      ## Valid values: Fail, Ignore, IgnoreOnInstallOnly
+      ## IgnoreOnInstallOnly - If Release.IsInstall returns "true", set "Ignore" otherwise "Fail"
+      failurePolicy: "Ignore"
+      ## The default timeoutSeconds is 10 and the maximum value is 30.
+      timeoutSeconds: 20
+      enabled: true
+      deployment:
+        enabled: false
+        replicas: 1
+        strategy: {}
+
+        ## Number of old replicasets to retain ##
+        ## The default value is 10, 0 will garbage-collect old replicasets ##
+        revisionHistoryLimit: 10
+
+        ## Define Log Format
+        logFormat: json
+
+        ## Decrease log verbosity to errors only
+        # logLevel: error
+
+        ## Prometheus-operator webhook image
+        ##
+        image:
+          registry: quayio.artifactory.cicd.dc
+          repository: prometheus-operator/admission-webhook
+          pullPolicy: IfNotPresent
+          logFormat: json
+
+        ## Decrease log verbosity to errors only
+        # logLevel: error
+
+        ## Resource limits & requests
+        resources: {}
+        # limits:
+        #   cpu: 200m
+        #   memory: 200Mi
+        # requests:
+        #   cpu: 100m
+        #   memory: 100Mi
+
+        ## Tolerations for use with node taints
+        ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+        tolerations:
+        - key: "purpose"
+          value: "gp"
+          effect: "NoSchedule"
+        dnsConfig: {}
+      patch:
+        enabled: true
+        image:
+          registry: ext-registry-k8s-io-remote.artifactory.cicd.dc
+          repository: ingress-nginx/kube-webhook-certgen
+          pullPolicy: IfNotPresent
+        resources: {}
+        tolerations:
+        - key: "purpose"
+          value: "gp"
+          effect: "NoSchedule"
+
+    networkPolicy:
+      ## Enable creation of NetworkPolicy resources.
+      ##
+      enabled: false
+      flavor: cilium
+
+      # cilium:
+      #   egress:
+
+      ## match labels used in selector
+      # matchLabels: {}
+    logFormat: json
+
+    ## Decrease log verbosity to errors only
+    # logLevel: error
+
+    kubeletService:
+      ## If true, the operator will create and maintain a service for scraping kubelets
+      ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/helm/prometheus-operator/README.md
+      ##
+      enabled: true
+      namespace: kube-system
+
+    ## Create a servicemonitor for the operator
+    ##
+    serviceMonitor:
+      ## Scrape interval. If not set, the Prometheus default scrape interval is used.
+      interval: "35s"
+    resources: {}
+    # limits:
+    #   cpu: 200m
+    #   memory: 200Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 100Mi
+
+    ## Tolerations for use with node taints
+    ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    ##
+    tolerations:
+    - key: "purpose"
+      value: "gp"
+      effect: "NoSchedule"
+
+    ## Prometheus-operator image
+    image:
+      registry: quayio.artifactory.cicd.dc
+      repository: prometheus-operator/prometheus-operator
+      pullPolicy: IfNotPresent
+
+    ## Prometheus-config-reloader
+    ##
+    prometheusConfigReloader:
+      image:
+        registry: quayio.artifactory.cicd.dc
+        repository: prometheus-operator/prometheus-config-reloader
+
+      # add prometheus config reloader liveness and readiness probe. Default: false
+      enableProbe: false
+
+      # resource config for prometheusConfigReloader
+      resources:
+        requests:
+          cpu: 200m
+          memory: 50Mi
+        limits:
+          cpu: 200m
+          memory: 50Mi
+
+    ## Thanos side-car image when configured
+    ## Left here for future implementation
+    thanosImage:
+      registry: quayio.artifactory.cicd.dc
+      repository: thanos/thanos
+      tag: v0.35.1
+
+  ## Deploy a Prometheus instance
+  ##
+  prometheus:
+    enabled: true
+
+    ## Configure network policy for the prometheus
+    networkPolicy:
+      enabled: false
+      flavor: cilium
+
+    ingress:
+      enabled: true
+      ingressClassName: ingress-nginx-utility
+      hosts:
+        - prom-eng-cdx-prod.cicd.dc
+      ## Paths to use for ingress rules - one path should match the prometheusSpec.routePrefix
+      paths:
+        - /
+    serviceMonitor:
+      ## Scrape interval. If not set, the Prometheus default scrape interval is used.
+      ##
+      interval: "35s"
+    prometheusSpec:
+      ## Statefulset's persistent volume claim retention policy
+      ## pvcDeleteOnStsDelete and pvcDeleteOnStsScale determine whether
+      ## statefulset's PVCs are deleted (true) or retained (false) on scaling down
+      ## and deleting statefulset, respectively. Requires 1.27.0+.
+      ## Ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#persistentvolumeclaim-retention
+      persistentVolumeClaimRetentionPolicy:
+        whenDeleted: Retain
+        whenScaled: Retain
+      ## Interval between consecutive scrapes.
+      ## Defaults to 30s.
+      ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/release-0.44/pkg/prometheus/promcfg.go#L180-L183
+      scrapeInterval: ""
+
+      ## Number of seconds to wait for target to respond before erroring
+      scrapeTimeout: "25s"
+
+      ## Image of Prometheus
+      image:
+        registry: quayio.artifactory.cicd.dc
+        repository: prometheus/prometheus
+      tolerations:
+       - key: "purpose"
+         value: "gp"
+         effect: "NoSchedule"
+
+      ## External labels to add to any time series or alerts when communicating with external systems
+      ## These labels MUST be set
+      externalLabels:
+        app: kubernetes
+        cluster: eng-cdx-prod
+        cluster_svc: k8s
+        env: prod
+        loc: las2
+        team: cicd-infra
+
+      ## How long to retain metrics
+      retention: 4h
+
+      ## Allow out-of-order/out-of-bounds samples ingested into Prometheus for a specified duration
+      ## See https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tsdb
+      tsdb:
+        outOfOrderTimeWindow: 10s
+      replicas: 2
+      logLevel: info
+      logFormat: json
+      routePrefix: /
+      podMetadata: {}
+      # labels:
+      #   app: prometheus
+      #   k8s-app: prometheus
+
+      ## The remote_write spec configuration for Prometheus.
+      ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#remotewritespec
+      ## This section is important and must not be changed other than the THANOS-TENANT
+      remoteWrite:
+       - url: 'http://las-thanos03-receiver.cicd.dc:19192/api/v1/receive'
+         headers:
+            THANOS-TENANT: k8s-eng-cdx-prod # format = k8s-<cluster_name>
+         writeRelabelConfigs:
+           - sourceLabels: [instance]
+             regex: '^.*:([0-9]+)$'
+             targetLabel: "port"
+             replacement: "$1"
+           - sourceLabels: [instance]
+             regex: '^.*\/\/(.*.dc|.*.sys)(:|\/).*$'
+             targetLabel: "endpoint"
+           - sourceLabels: [instance]
+             regex: '(?:^.*\/\/|^)(.*.dc|.*.sys)(:|\/|).*$'
+             targetLabel: "instance"
+             replacement: "$1"
+       - url: 'http://las-thanos04-receiver.cicd.dc:19192/api/v1/receive'
+         headers:
+           THANOS-TENANT: k8s-eng-cdx-prod # format = k8s-<cluster_name>
+         writeRelabelConfigs:
+           - sourceLabels: [instance]
+             regex: '^.*:([0-9]+)$'
+             targetLabel: "port"
+             replacement: "$1"
+           - sourceLabels: [instance]
+             regex: '^.*\/\/(.*.dc|.*.sys)(:|\/).*$'
+             targetLabel: "endpoint"
+           - sourceLabels: [instance]
+             regex: '(?:^.*\/\/|^)(.*.dc|.*.sys)(:|\/|).*$'
+             targetLabel: "instance"
+             replacement: "$1"
+      resources: {}
+      # requests:
+      #   memory: 400Mi

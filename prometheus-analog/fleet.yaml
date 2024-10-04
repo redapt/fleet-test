@@ -1,0 +1,93 @@
+# This file and all contents in it are OPTIONAL.
+
+# The namespace this chart will be installed and restricted to,
+# if not specified the chart will be installed to "default"
+defaultNamespace: default
+
+# Custom helm options
+helm:
+  # The release name to use. If empty a generated release name will be used
+  releaseName: prometheus
+
+  # The directory of the chart in the repo.  Also any valid go-getter supported
+  # URL can be used there is specify where to download the chart from.
+  # If repo below is set this value if the chart name in the repo
+  chart: "./"
+
+  # Used if repo is set to look up the version of the chart
+  #version: ""
+
+  # Force recreate resource that can not be updated
+  force: false
+
+  # How long for helm to wait for the release to be active. If the value
+  # is less that or equal to zero, we will not wait in Helm
+  timeoutSeconds: 0
+
+  # Custom values that will be passed as values.yaml to the installation
+  valuesFiles:
+    - values.yaml
+#  values:
+#    replicas: 2
+
+#- name: dev
+#  helm:
+#    values:
+#      prometheus:
+#        prometheusSpec:
+#          remoteWrite:
+#          - url: ${ get .ClusterValues "prometheus-host1" }
+#            headers:
+#                THANOS-TENANT: ${ get .ClusterValues "thanos-tenant" } # format = k8s-<cluster_name>
+#            writeRelabelConfigs:
+#              - sourceLabels: [instance]
+#                regex: '^.*:([0-9]+)$'
+#                targetLabel: "port"
+#                replacement: "$1"
+#              - sourceLabels: [instance]
+#                regex: '^.*\/\/(.*.dc|.*.sys)(:|\/).*$'
+#                targetLabel: "endpoint"
+#              - sourceLabels: [instance]
+#                regex: '(?:^.*\/\/|^)(.*.dc|.*.sys)(:|\/|).*$'
+#                targetLabel: "instance"
+#                replacement: "$1"
+#          - url: ${ get .ClusterValues "prometheus-host2" }
+#            headers:
+#              THANOS-TENANT: ${ get .ClusterValues "thanos-tenant" } # format = k8s-<cluster_name>
+#            writeRelabelConfigs:
+#              - sourceLabels: [instance]
+#                regex: '^.*:([0-9]+)$'
+#                targetLabel: "port"
+#                replacement: "$1"
+#              - sourceLabels: [instance]
+#                regex: '^.*\/\/(.*.dc|.*.sys)(:|\/).*$'
+#                targetLabel: "endpoint"
+#              - sourceLabels: [instance]
+#                regex: '(?:^.*\/\/|^)(.*.dc|.*.sys)(:|\/|).*$'
+#                targetLabel: "instance"
+#                replacement: "$1"
+#  clusterSelector:
+#    matchLabels:
+#      env: dev
+diff:
+  comparePatches:
+  - apiVersion: monitoring.coreos.com/v1
+    kind: Prometheus
+#    operations:
+#    - {"op":"remove", "path":"/spec/automountServiceAccountToken"}
+#    - {"op":"remove", "path":"/spec/enableAdminAPI"}
+#    - {"op":"remove", "path":"/spec/hostNetwork"}
+#    - {"op":"remove", "path":"/spec/listenLocal"}
+#    - {"op":"remove", "path":"/spec/paused"}
+#    - {"op":"remove", "path":"/spec/scrapeConfigNamespaceSelector"}
+#    - {"op":"remove", "path":"/spec/scrapeConfigSelector"}
+#    - {"op":"remove", "path":"/spec/tsdb"}
+    jsonPointers: # jsonPointers allows to ignore diffs at certain json path
+    - "/spec/automountServiceAccountToken"
+    - "/spec/enableAdminAPI"
+    - "/spec/hostNetwork"
+    - "/spec/listenLocal"
+    - "/spec/paused"
+    - "/spec/scrapeConfigNamespaceSelector"
+    - "/spec/scrapeConfigSelector"
+    - "/spec/tsdb"
